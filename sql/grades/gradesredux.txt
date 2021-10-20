@@ -1,0 +1,87 @@
+create database week11;
+
+use week11;
+
+create table grades 
+(
+	sname varchar(10), 
+	assgn varchar(15), 
+	grade int
+);
+
+load data local infile 'grades.csv'
+into table grades
+fields terminated by ',' escaped by '\\'
+lines terminated by '\r\n'
+ignore 1 lines;
+
+
+update grades 
+set assgn=
+case assgn
+when 'hw1' Then 'HW1'
+when 'Homework1' Then 'HW1'
+when 'Hw2' Then 'HW2'
+when 'hW2' Then 'HW2'
+when 'Homewrk3' Then 'HW3'
+else assgn
+END;
+
+
+Update grades 
+set sname= 
+case sname
+when 'JuLIO' Then 'Julio'
+when 'SAMANTHA' Then 'Samantha'
+wHEN 'percy' Then 'Percy'
+when 'PERCY' Then 'Percy'
+when 'jesse' Then 'Jesse'
+end;
+
+
+alter table grades 
+add column id int NOT NULL AUTO_INCREMENT primary key first;
+alter table grades
+add column sid int NOT NULL after id;
+update grades 
+set sid= 
+case 
+when sid = 0 and sname = 'Jesse' Then 1
+when sid = 0 and sname = 'Julio' Then 2
+when sid = 0 and sname = 'Percy' Then 3
+when sid = 0 and sname = 'Samantha' Then 4
+else sid
+END;
+
+
+update grades
+set grade=
+case 
+when grade is null and id= 8 then 0
+when grade is null and id= 10 then 0
+when grade is null and id= 12 then 0
+else grade
+end;
+
+
+select assgn, avg(grade) as avg, min(grade) as lowest , max(grade) as highest 
+from grades 
+group by assgn
+order by avg(grade);
+select sname,
+case
+when avg(grade) between 90 and 100 then 'A'
+when avg(grade) between 80 and 89 then 'B'
+when avg(grade) between 70 and 79 then 'C'
+when avg(grade) between 60 and 69 then 'D'
+when avg(grade) between 0 and 59 then 'F'
+END as letter_grade
+from grades
+group by sname
+order by avg(grade)desc;
+
+
+
+
+
+

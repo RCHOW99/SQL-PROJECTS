@@ -1,0 +1,195 @@
+
+Sqlite3 busdriver.db
+
+--1.
+
+Create TABLE Bus(
+
+BusNO VARCHAR(5) PRIMARY KEY,
+
+YearPurchased INTEGER NOT NULL,
+
+Seats INTEGER
+
+);
+
+Create TABLE Driver(
+
+DriverID VARCHAR(5) PRIMARY KEY,
+
+Drivername VARCHAR(50) NOT NULL,
+
+AGE INTEGER
+
+);
+
+CREATE TABLE ServiceLog(
+
+LogNo INTEGER PRIMARY KEY AUTOINCREMENT,
+
+Who VARCHAR(5) NOT NULL,
+
+Which VARCHAR(5) NOT NULL,
+
+Route INTEGER NOT NULL,
+
+TicketsSold INTEGER,
+
+ServiceDate DATE NOT NULL,
+
+FOREIGN KEY (Who)
+
+REFERENCES Driver(DriverID) ON DELETE NO ACTION
+
+ON UPDATE NO ACTION, -- CASCAD
+
+FOREIGN KEY (Which)
+
+REFERENCES Bus(BusNO) ON DELETE NO ACTION
+
+ON UPDATE NO ACTION
+
+);
+
+INSERT INTO Bus VALUES
+('A05', 2013, 32),
+('C23', 2008, 26),
+('B07', 2011, 32),
+('B88', 2013, 26),
+('C40', 2017, 40),
+('A11', 2018, 18);
+
+INSERT INTO Driver VALUES
+('D1', 'Henry W. Jackson', 37),
+('D2', 'Paul Young', 29),
+('D3', 'Julia J. Fisher', 48),
+('D5', 'Tom R. Wilson', 37),
+('D6', 'Greg H. Lee', 37),
+('D9', 'Henry T. James', 55);
+
+INSERT INTO ServiceLog (Who, Which, Route, TicketsSold, ServiceDate) VALUES
+('D2', 'A05', 105, 29, '2018-12-11'),
+('D2', 'C23', 69, 22, '2018-12-30'),
+('D5', 'B07', 122, 17, '2019-01-15'),
+('D3', 'A05', 122 ,8, '2019-01-18'),
+('D1', 'B07', 69, NULL, '2018-12-11'),
+('D1', 'B07', 34, 11, '2018-12-22'),
+('D2', 'A05' ,69, 30, '2018-12-22'),
+('D5', 'A05', 69, NULL, '2018-12-11'),
+('D2', 'B88', 122, 5, '2018-12-11'),
+('D9', 'A05', 55, 26, '2019-01-18');
+
+--2.
+
+select COUNT(*) from Bus;
+
+select COUNT(*) from Driver;
+
+select COUNT(*) from ServiceLog;
+
+--3. 
+
+select driverid
+
+from driver
+
+where driverid in
+
+(select who
+
+from servicelog where which in (select busno from bus where yearpurchased < 2013))
+
+order by driverid asc;
+
+--4. 
+
+select distinct driverid
+
+from driver
+
+inner join servicelog on driver.driverid = servicelog.Who
+
+inner join bus on servicelog.Which = bus.BusNO
+
+where yearpurchased < 2013
+
+order by driverid asc;
+
+--5. 
+
+select distinct driverid, drivername
+
+from driver
+
+inner join servicelog on driver.driverid = servicelog.Who
+
+inner join bus on servicelog.Which = bus.BusNO
+
+where yearpurchased < 2013
+
+order by driverid asc;
+
+--6.
+select Route, LogNo as TotalLog, TicketsSold as TotalTicketsSold
+from serviceLog
+GROUP BY TOTALTICKETSSOLD
+ORDER BY TOTALTICKETSSOLD DESC;
+
+--7.
+select Route, LogNo as TotalLog, TicketsSold as TotalTicketsSold
+from serviceLog
+where servicedate like '___8%'
+GROUP BY TOTALTICKETSSOLD
+ORDER BY TOTALTICKETSSOLD DESC;
+
+--8.
+select Route, LogNo as TotalLog, TicketsSold as TotalTicketsSold
+from serviceLog
+GROUP BY TOTALTICKETSSOLD
+ORDER BY TOTALTICKETSSOLD DESC
+limit 2 offset 1;
+
+--9.
+select driverid, drivername, logno, who, which, route, ticketssold, servicedate
+from driver
+inner join servicelog on driver.driverid = servicelog.Who
+where age > 37;
+
+--10.
+select *
+from bus
+order by yearpurchased
+limit 4 offset 2;
+
+--11.
+select maintainby, COUNT(maintainby) from bus
+group by maintainby
+order by count(maintainby) desc;
+
+--12.
+select driverid, drivername from driver
+where driverid not in (select maintainby from bus);
+
+--13.
+select maintainby from bus where maintainby not in (select who from servicelog);
+
+--14.
+select driverid, drivername, age
+from driver where driverid in (select maintainby from bus)
+order by age desc
+limit 1;
+
+--15.
+select * from bus
+order by lastmaintenancedate, busno asc
+limit 3 offset 3;
+
+--16.
+select maintainby, lastmaintenancedate
+from bus where lastmaintenancedate > (select servicedate from servicelog);
+
+--17.
+select busno, lastmaintenancedate
+from bus
+order by lastmaintenancedate desc
+limit 3;
